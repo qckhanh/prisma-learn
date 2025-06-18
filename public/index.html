@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Chat Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    #chatBox {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      background-color: white;
+      margin-bottom: 20px;
+    }
+    #chatBox p {
+      margin: 5px 0;
+    }
+    #messageInput {
+      width: 80%;
+      padding: 8px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .status {
+      font-style: italic;
+      color: #555;
+    }
+    .error {
+      color: red;
+    }
+    .info {
+      color: blue;
+    }
+    .chat {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+<h1>WebSocket Chat Client</h1>
+<div id="chatBox"></div>
+<input type="text" id="messageInput" placeholder="Type your message..." />
+<button onclick="sendMessage()">Send</button>
+
+<script>
+  const ws = new WebSocket('ws://localhost:5001');
+  const chatBox = document.getElementById('chatBox');
+  const messageInput = document.getElementById('messageInput');
+
+  // Hiển thị tin nhắn trong chatBox
+  function appendMessage(message, className = '') {
+    const p = document.createElement('p');
+    p.textContent = message;
+    if (className) p.className = className;
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight; // Cuộn xuống dưới cùng
+  }
+
+  // Xử lý sự kiện WebSocket
+  ws.onopen = () => {
+    appendMessage('Connected to WebSocket server', 'status');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      let message = '';
+      let className = data.type;
+
+      switch (data.type) {
+        case 'chat':
+          message = `${data.sender} (${new Date(data.timestamp).toLocaleTimeString()}): ${data.content}`;
+          break;
+        case 'info':
+          message = `Info: ${data.message}`;
+          break;
+        case 'error':
+          message = `Error: ${data.message}`;
+          break;
+        default:
+          message = `Unknown message: ${event.data}`;
+      }
+
+      appendMessage(message, className);
+    } catch (error) {
+      appendMessage(`Failed to parse message: ${event.data}`, 'error');
+    }
+  };
+
+  ws.onclose = () => {
+    appendMessage('Disconnected from WebSocket server', 'status');
+  };
+
+  ws.onerror = (error) => {
+    appendMessage('WebSocket error occurred', 'error');
+    console.error('WebSocket error:', error);
+  };
+
+  // Gửi tin nhắn
+  function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content) {
+      appendMessage('Please enter a message to send', 'error');
+      return;
+    }
+
+    if (ws.readyState === WebSocket.OPEN) {
+      const message = {
+        type: 'chat',
+        content: content
+      };
+      ws.send(JSON.stringify(message));
+      messageInput.value = ''; // Xóa input sau khi gửi
+    } else {
+      appendMessage('WebSocket is not connected', 'error');
+    }
+  }
+
+  // Gửi tin nhắn khi nhấn Enter
+  messageInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  });
+</script>
+</body>
+</html>
