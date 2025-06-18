@@ -7,3 +7,5 @@
 out
 gen
 node_modules
+
+/generated/prisma

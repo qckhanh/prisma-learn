@@ -4,9 +4,17 @@
   "private": true,
   "scripts": {
     "start": "node build/app.js",
-    "dev": "nodemon app.ts"
+    "dev": "nodemon app.ts",
+    "build": "tsc",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:reset": "prisma migrate reset",
+    "prisma:setup": "npm run prisma:migrate && npm run prisma:generate",
+    "prisma:init": "npx prisma init"
   },
   "dependencies": {
+    "@prisma/client": "^6.10.0",
+    "@prisma/extension-accelerate": "^2.0.1",
     "@types/winston": "^2.4.4",
     "@types/ws": "^8.18.1",
     "cookie-parser": "~1.4.4",
@@ -17,13 +25,16 @@
     "express-graphql": "^0.12.0",
     "morgan": "~1.9.1",
     "uuid": "^11.1.0",
-    "ws": "^8.18.2"
+    "ws": "^8.18.2",
+    "zod": "^3.25.64"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
+    "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
+    "prisma": "^6.10.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.0"

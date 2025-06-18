@@ -24,11 +24,11 @@ const applyRoutes = (app: Express) => {
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     next();
   });
-  app.use('/api/v1/customers', customerRoute);
-  // Add other routes here
-  app.use(graphQLRouter);
+  /////////////////////////////////////////////////////////////////////////////
 
-  //Invalid route
+  app.use('/api/v1/customers', customerRoute);
+
+  /////////////////////////////////////////////////////////////////////////////
   app.use((req: Request, res: Response, next: NextFunction) => {
     throw new HttpError(
       `Route ${req.method} ${req.originalUrl} does not exist`,

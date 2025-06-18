@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// File chính để import các schema khác
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+// CUSTOMER
+
+model Customer {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  email       String   @unique @db.VarChar(100)
+  phoneNumber String   @unique @db.VarChar(12)
+  createdAt   DateTime @default(now())
+
+  accounts Account[] @relation("CustomerAccounts")
+}
+
+enum AccountType {
+  SAVINGS
+  CHECKING
+  CREDIT
+}
+
+model Account {
+  id          Int         @id @default(autoincrement())
+  customerID  Int         @unique
+  customer    Customer    @relation("CustomerAccounts", fields: [customerID], references: [id])
+  accountType AccountType @default(SAVINGS)
+  balance     Float       @default(0.0)
+  createdAt   DateTime    @default(now())
+
+  sentTransactions      Transaction[] @relation("SendAccount")
+  receiveedTransactions Transaction[] @relation("ReceiveAccount")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+}
+
+// Định nghĩa enum cho status
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+model Transaction {
+  id               Int             @id @default(autoincrement())
+  transactionType  TransactionType @default(TRANSFER)
+  amnount          Float
+  sendAccountID    Int
+  sendAccount      Account         @relation("SendAccount", fields: [sendAccountID], references: [id])
+  receiveAccountID Int
+  receiveAccount   Account         @relation("ReceiveAccount", fields: [receiveAccountID], references: [id])
+}
