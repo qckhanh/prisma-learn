@@ -1,59 +1,48 @@
-import { Database } from '../database/database';
+import { Customer, PrismaClient } from '@prisma/client';
+import { MyPrisma } from '../prisma';
 import { HttpError } from '../helpers/httpsError.helpers';
 
 export class CustomerService {
-  static async getAllUsers(): Promise<any> {
-    console.log(Database.customers);
-    return Database.customers;
-  }
+    private static prisma: PrismaClient = MyPrisma.getInstance();
 
-  private static SELL_OFF(
-    status: boolean,
-    percent: number = 0,
-  ): number {
-    if (!status || percent < 0) return 0;
-    return 1 - percent / 100;
-  }
+    static async create(data: Customer): Promise<Customer> {
+        try {
+            const customer: Customer | null = await this.prisma.customer.findFirst({
+                where: {
+                    OR: [{ email: data.email }, { phoneNumber: data.phoneNumber }],
+                },
+            });
+            if (customer) {
+                throw new HttpError('Email or phone already used', 401, 'EMAIL_EXISTS');
+            }
 
-  static async getCustomerById(id: number): Promise<any> {
-    const result = Database.customers.find(
-      customer => customer.id === id,
-    );
-
-    if (!result) {
-      throw new HttpError(`Not found`, 404, 'USER_NOT_FOUND');
+            return await this.prisma.customer.create({
+                data,
+            });
+        } catch (err) {
+            throw err;
+        }
     }
 
-    const order = Database.orders.filter(
-      order => order.customer_id === id,
-    );
-    return {
-      customer: result,
-      order: order,
-    };
-  }
+    static async getAll(page: number, limit: number): Promise<any> {
+        try {
+            const skip = (page - 1) * limit;
+            const [customers, total] = await Promise.all([
+                this.prisma.customer.findMany({
+                    skip,
+                    take: limit,
+                }),
+                this.prisma.customer.count(),
+            ]);
 
-  static async getTotal(id: number): Promise<any> {
-    const order = Database.orders.filter(
-      order => order.customer_id === id,
-    );
-
-    const products = Database.products.filter(product =>
-      order.some(o => o.product_id === product.id),
-    );
-
-    let total = 0;
-    for (const product of products) {
-      const sell_off = this.SELL_OFF(
-        product.sell_off,
-        product.percent,
-      );
-
-      total += product.price * sell_off;
+            const totalPages: number = Math.ceil(total / limit);
+            return {
+                data: customers,
+                total,
+                totalPages,
+            };
+        } catch (err) {
+            throw err;
+        }
     }
-
-    return {
-      total_price: total,
-    };
-  }
 }

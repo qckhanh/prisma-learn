@@ -11,8 +11,7 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["prismaSchemaFolder"]
+  provider = "prisma-client-js"
 }
 
 // CUSTOMER
@@ -21,8 +20,9 @@ model Customer {
   id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(100)
   email       String   @unique @db.VarChar(100)
-  phoneNumber String   @unique @db.VarChar(12)
+  phoneNumber String?  @unique @db.VarChar(12)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
   accounts Account[] @relation("CustomerAccounts")
 }
@@ -34,13 +34,13 @@ enum AccountType {
 }
 
 model Account {
-  id          Int         @id @default(autoincrement())
-  customerID  Int         @unique
-  customer    Customer    @relation("CustomerAccounts", fields: [customerID], references: [id])
-  accountType AccountType @default(SAVINGS)
-  balance     Float       @default(0.0)
-  createdAt   DateTime    @default(now())
-
+  id                    Int           @id @default(autoincrement())
+  customerID            Int           @unique
+  customer              Customer      @relation("CustomerAccounts", fields: [customerID], references: [id])
+  accountType           AccountType   @default(SAVINGS)
+  balance               Float         @default(0.0)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @default(now()) @updatedAt
   sentTransactions      Transaction[] @relation("SendAccount")
   receiveedTransactions Transaction[] @relation("ReceiveAccount")
 }
@@ -57,6 +57,7 @@ enum TransactionStatus {
   COMPLETED
   FAILED
 }
+
 model Transaction {
   id               Int             @id @default(autoincrement())
   transactionType  TransactionType @default(TRANSFER)

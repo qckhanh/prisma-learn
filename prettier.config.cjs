@@ -8,10 +8,10 @@
 // };
 
 module.exports = {
-  semi: true,
-  singleQuote: true,
-  tabWidth: 2,
-  trailingComma: 'all',
-  printWidth: 70,
-  arrowParens: 'avoid',
+    semi: true,
+    singleQuote: true,
+    tabWidth: 4,
+    trailingComma: 'all',
+    printWidth: 100,
+    arrowParens: 'avoid',
 };

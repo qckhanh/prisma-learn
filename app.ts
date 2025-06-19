@@ -2,7 +2,7 @@ import * as http from 'node:http';
 import express, { Express } from 'express';
 import applyRoutes from './routes';
 import applyGlobalMiddleware from './middleware';
-import { PrismaClient } from '@prisma/client';
+import { Customer, PrismaClient } from '@prisma/client';
 import { MyPrisma } from './prisma';
 
 const PORT = 5001;
